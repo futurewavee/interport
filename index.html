@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Interporto BO | AI Mobility Orchestrator</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Colori base chiari per leggibilità (bianco su grigio scuro) */
+  --y: #FFCC00; --yd: #C49A00;
+  --bg: #1e1e1e; --bg2: #2a2a2a; --bg3: #353535; --bg4: #404040;
+  --br: #444444; --br2: #555555;
+  --tx: #ffffff; --txd: #dcdcdc; --txm: #eeeeee;
+  --red: #FF4444; --ora: #FF9900; --grn: #00E676; --blu: #00B4D8; --pur: #9B59B6;
+  --rd2: rgba(255,68,68,.15); --or2: rgba(255,153,0,.15); --gn2: rgba(0,230,118,.12); --bl2: rgba(0,180,216,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Barlow',sans-serif;overflow:hidden; font-size: 15px;}
+
+/* ── HEADER E FISSI STRUTTURALI ── */
+.hdr{height:60px;background:var(--bg2);border-bottom:1px solid var(--br);display:flex;align-items:center;padding:0 18px;gap:16px;position:relative;z-index:9000;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0; position:relative; z-index:9005;}
+.logo-img-link{display:flex;align-items:center;cursor:pointer;}
+.logo-txt{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;letter-spacing:.05em;white-space:nowrap}
+.logo-txt b{color:var(--y)}
+
+nav{display:flex;gap:4px}
+.nb{padding:8px 14px;background:transparent;border:none;color:var(--txd);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all .18s;position:relative;white-space:nowrap}
+.nb:hover{color:var(--tx);background:var(--bg3)}
+.nb.on{color:var(--y);background:rgba(255,204,0,.1)}
+.nb.on::after{content:'';position:absolute;bottom:0;left:6px;right:6px;height:2px;background:var(--y);border-radius:1px}
+
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:12px; position:relative; z-index:9010;}
+.live-badge{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--grn); font-weight:700;}
+.ld{width:8px;height:8px;background:var(--grn);border-radius:50%;animation:pg 2s infinite}
+@keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,.5)}50%{box-shadow:0 0 0 6px rgba(0,230,118,0)}}
+
+.notif-btn{position:relative;width:36px;height:36px;background:var(--bg3);border:1px solid var(--br);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.notif-btn:hover{border-color:var(--y)}
+.notif-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--bg2)}
+
+/* FIX MOBILE ROLE SELECTOR */
+.role-wrap{position:relative; z-index: 9999; pointer-events:auto;}
+.role-sel{padding:8px 14px 8px 10px;background:var(--bg3);border:1px solid var(--br);color:var(--tx);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;border-radius:6px;cursor:pointer;outline:none;letter-spacing:.04em;transition:all .2s;min-width:200px; position:relative; z-index:9999;}
+.role-sel:hover,.role-sel:focus{border-color:var(--y);background:var(--bg4)}
+
+/* ── MAIN ── */
+.main{height:calc(100vh - 60px);display:flex;flex-direction:column;overflow:hidden; position:relative; z-index:1;}
+.page{display:none !important;height:100%;overflow-y:auto;overflow-x:hidden;padding:16px 20px;flex-direction:column;gap:16px; position:relative;}
+.page.on{display:flex !important}
+
+/* ── KPI CARDS ── */
+.kpi-row{display:grid;gap:14px;flex-shrink:0}
+.kpi4{grid-template-columns:repeat(4,1fr)}
+.kpi3{grid-template-columns:repeat(3,1fr)}
+.kcard{background:var(--bg2);border:1px solid var(--br);border-radius:8px;padding:16px;position:relative;overflow:hidden;}
+.kcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kcard.red::before{background:var(--red)}.kcard.yel::before{background:var(--y)}.kcard.grn::before{background:var(--grn)}.kcard.blu::before{background:var(--blu)}.kcard.ora::before{background:var(--ora)}
+.klbl{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txd);margin-bottom:6px}
+.kval{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:700;line-height:1}
+.kval.red{color:var(--red)}.kval.yel{color:var(--y)}.kval.grn{color:var(--grn)}.kval.blu{color:var(--blu)}.kval.ora{color:var(--ora)}
+.ksub{font-size:12px;color:var(--txd);margin-top:8px;font-family:'JetBrains Mono',monospace}
+.kbar{height:4px;background:var(--br2);border-radius:2px;margin-top:10px;overflow:hidden}
+.kbf{height:100%;border-radius:2px;transition:width 1s}
+.kbf.red{background:var(--red)}.kbf.yel{background:var(--y)}.kbf.grn{background:var(--grn)}.kbf.blu{background:var(--blu)}.kbf.ora{background:var(--ora)}
+
+/* ── PANELS ── */
+.panel{background:var(--bg2);border:1px solid var(--br);border-radius:8px;overflow:hidden;display:flex;flex-direction:column; position:relative; z-index:10;}
+.ph{padding:12px 16px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pt{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--y)}
+.pb{padding:16px;flex:1;overflow-y:auto; position:relative;}
+
+/* ── ROLE TRANSITION OVERLAY ── */
+.role-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0);
+  pointer-events:none;z-index:999999;
+  transition:background .4s;
+  display:flex;align-items:center;justify-content:center;
+}
+.role-overlay.flash{background:rgba(0,0,0,.9);pointer-events:all}
+.role-msg{
+  font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--y);opacity:0;transform:scale(.85);
+  transition:all .3s;text-align:center;
+}
+.role-msg.show{opacity:1;transform:scale(1)}
+.role-msg small{display:block;font-size:15px;color:var(--txm);margin-top:8px;letter-spacing:.06em;font-weight:400; text-transform:none;}
+
+/* ── LIVE TRANSIT LOG ── */
+.tlog-wrap{overflow:auto;flex:1}
+table.tlog{width:100%;border-collapse:collapse;font-size:14px}
+table.tlog th{
+  text-align:left;padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);border-bottom:1px solid var(--br);white-space:nowrap;position:sticky;top:0;background:var(--bg2);z-index:2;
+}
+table.tlog td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;transition:all .4s}
+table.tlog tr:hover td{background:rgba(255,255,255,.04)}
+tr.row-nexus td{background:rgba(255,204,0,.05)}
+tr.row-nexus:hover td{background:rgba(255,204,0,.08)!important}
+tr.row-nexus .tplate{color:var(--y);font-weight:700}
+tr.row-locked td{opacity:.5}
+tr.row-train td{background:rgba(0,180,216,.05)}
+.tplate{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;white-space:nowrap}
+.plate-clear{color:var(--tx)}
+.plate-hash{color:var(--grn);font-size:12px}
+
+.priv-cell{
+  display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid var(--br);border-radius:4px;padding:4px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;transition:filter .4s,color .4s;
+}
+.priv-cell.blur-on{filter:blur(5px);color:transparent;background:rgba(100,100,100,.15);user-select:none;pointer-events:none;}
+.priv-icon{font-size:13px;flex-shrink:0}
+
+/* STATUS PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.pill-r{background:var(--rd2);color:var(--red);border:1px solid rgba(255,68,68,.3)}
+.pill-y{background:rgba(255,204,0,.15);color:var(--y);border:1px solid rgba(255,204,0,.3)}
+.pill-g{background:var(--gn2);color:var(--grn);border:1px solid rgba(0,230,118,.3)}
+.pill-b{background:var(--bl2);color:var(--blu);border:1px solid rgba(0,180,216,.3)}
+
+.eta-cell{font-family:'JetBrains Mono',monospace;font-size:13px}
+.eta-nexus{color:var(--grn);font-weight:700}
+.eta-hidden{color:transparent;filter:blur(5px);user-select:none}
+
+/* MAP MARKER DOTS (Maintained CSS in case needed later, but dots removed) */
+.mk{position:absolute;width:12px;height:12px;border-radius:50%;cursor:pointer;transform:translate(-50%,-50%);transition:all .4s;z-index:8}
+.mk.nexus{background:var(--y);box-shadow:0 0 0 3px rgba(255,204,0,.4)}
+.mk.other-admin{background:var(--y);box-shadow:0 0 0 3px rgba(255,204,0,.3)}
+.mk.other-nexus{background:#666;box-shadow:none;cursor:default;pointer-events:none}
+.mk.train{background:var(--blu);box-shadow:0 0 0 4px rgba(0,180,216,.3);width:14px;height:14px}
+.mk:hover::after{content:attr(data-tip);position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:#111;border:1px solid var(--br);padding:4px 10px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx);white-space:nowrap;z-index:99}
+@keyframes mkpulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.4)}}
+.mk.moving{animation:mkpulse 2s infinite}
+
+/* ── MAP ── */
+#page-map{padding:0!important;flex-direction:row;overflow:hidden}
+.map-cont{flex:1;position:relative;overflow:hidden;background:#181818}
+.map-svg{position:absolute;inset:0;width:100%;height:100%}
+.zone-g{cursor:pointer}
+.zone-a{transition:fill .4s,filter .4s,opacity .5s}
+.zone-a:hover{filter:brightness(1.5)}
+.zone-a.locked{cursor:not-allowed;opacity:.15!important; filter:grayscale(100%);}
+.zone-a.locked:hover{filter:grayscale(100%) brightness(1.2) !important;}
+.zone-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;fill:rgba(255,255,255,.9);pointer-events:none;text-anchor:middle;dominant-baseline:middle}
+
+.mc{position:absolute;top:16px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:10}
+.mbtn{width:36px;height:36px;background:var(--bg2);border:1px solid var(--br);color:var(--y);font-size:18px;font-weight:700;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mbtn:hover{border-color:var(--y); background:var(--bg3)}
+
+.mleg{position:absolute;bottom:16px;left:16px;background:rgba(30,30,30,.95);border:1px solid var(--br);border-radius:8px;padding:12px 16px;display:flex;gap:16px;align-items:center;z-index:10;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txd)}
+.ld2{width:12px;height:12px;border-radius:3px}
+
+.msp{width:340px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--br);display:flex;flex-direction:column;overflow:hidden}
+.msph{padding:16px 20px;border-bottom:1px solid var(--br);background:var(--bg3);flex-shrink:0}
+.mspb{padding:16px;flex:1;overflow-y:auto}
+
+.zring-wrap{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.zsat-pct{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700}
+.zsat-lbl{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)}
+.zbar{height:6px;background:var(--br2);border-radius:3px;margin-top:8px;overflow:hidden}
+.zbf{height:100%;border-radius:3px;transition:width .5s}
+
+.airec{background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.2);border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:16px}
+.airec-ttl{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--y);margin-bottom:4px}
+.tchip{padding:6px 12px;background:rgba(255,255,255,.05);border:1px solid var(--br);border-radius:4px;font-size:13px;transition:all .15s;display:block;margin-bottom:6px}
+
+/* ── ALERTS / AI ENGINE (FIX MOBILE CLICKS) ── */
+.alert{padding:14px;border-radius:6px;border-left:4px solid;background:rgba(255,255,255,.03);margin-bottom:12px; position:relative; z-index:20;}
+.alert.crit{border-color:var(--red)}.alert.warn{border-color:var(--y)}.alert.info{border-color:var(--blu)}
+.ameta{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.alert.crit .ameta{color:var(--red)}.alert.warn .ameta{color:var(--y)}.alert.info .ameta{color:var(--blu)}
+.atxt{font-size:14px;color:var(--tx);margin-bottom:10px;line-height:1.5}
+.btn-eng{padding:10px 18px;background:var(--y);color:#000;border:none;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s; position:relative; z-index:50; pointer-events:auto; touch-action:manipulation; display:inline-block;}
+.btn-eng:hover{background:#FFD740}.btn-eng.done{background:var(--grn);color:#000}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;right:24px;background:var(--grn);color:#000;padding:12px 20px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.05em;z-index:99999;transform:translateY(60px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* Charts */
+.chart-wrap{width:100%;height:100%;min-height:220px;position:relative}
+
+/* GRID ROWS */
+.gr{display:grid;gap:16px;flex:1;min-height:0}
+.c6040{grid-template-columns:60fr 40fr}
+.c5050{grid-template-columns:1fr 1fr}
+
+/* GATE TABLE */
+.gtbl{width:100%;border-collapse:collapse;font-size:13px}
+.gtbl th{text-align:left;padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);border-bottom:1px solid var(--br)}
+.gtbl td{padding:12px;border-bottom:1px solid rgba(255,255,255,.05);font-family:'JetBrains Mono',monospace;font-size:13px}
+
+/* SLOT */
+.slot-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.slot{padding:10px 6px;border-radius:6px;border:1px solid;text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:all .15s}
+.slot.free{border-color:rgba(0,230,118,.4);background:rgba(0,230,118,.08);color:var(--grn)}
+.slot.busy{border-color:rgba(255,68,68,.4);background:rgba(255,68,68,.1);color:var(--red)}
+.slot.res{border-color:rgba(255,204,0,.4);background:rgba(255,204,0,.1);color:var(--y)}
+
+/* Mission control grid */
+.mc-grid{display:grid;grid-template-columns:1fr 400px;gap:16px;flex:1;min-height:0}
+.mc-left{display:flex;flex-direction:column;gap:16px;min-height:0}
+.mc-right{display:flex;flex-direction:column;gap:16px;min-height:0}
+
+/* ── TOUCH-ACTION ── */
+button, select, a, input, label, .nb, .mnb, .btn-eng, .mbtn, .role-sel, .zone-g, .mk, .slot, .tchip, .notif-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(255,204,0,.2);
+}
+
+/* ── MOBILE BOTTOM NAV ── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid var(--br);z-index:99999;padding:0;padding-bottom:env(safe-area-inset-bottom,0px);pointer-events:all;isolation:isolate;-webkit-transform:translateZ(0);transform:translateZ(0)}
+.mob-nav-inner{display:grid;grid-template-columns:repeat(3,1fr);height:64px}
+.mnb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:none;background:transparent;color:var(--txd);cursor:pointer;padding:8px;transition:color .15s;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.2;width:100%}
+.mnb .mni{font-size:22px;line-height:1;display:block}
+.mnb.on{color:var(--y)}
+.mnb.on .mni{filter:drop-shadow(0 0 6px rgba(255,204,0,.6))}
+
+/* ── MOBILE MAP PANEL ── */
+.msp-mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;opacity:0;transition:opacity .3s}
+.msp-mobile-overlay.show{opacity:1; pointer-events:auto;}
+.msp-mobile{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:2px solid var(--y);border-radius:20px 20px 0 0;z-index:401;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);max-height:80vh;display:flex;flex-direction:column; pointer-events:auto;}
+.msp-mobile.show{transform:translateY(0)}
+.msp-mobile-drag{width:40px;height:5px;background:var(--br2);border-radius:3px;margin:12px auto 0}
+.msp-mobile-header{padding:12px 20px 16px;border-bottom:1px solid var(--br);flex-shrink:0}
+.msp-mobile-body{padding:16px 20px;overflow-y:auto;flex:1;padding-bottom:calc(env(safe-area-inset-bottom) + 16px)}
+
+/* ── RESPONSIVE MEDIA QUERIES ── */
+@media (max-width:768px){
+  html{overflow-x:hidden;overflow-y:auto;height:auto}
+  body{overflow-x:hidden;overflow-y:auto;height:auto;min-height:100vh}
+  .main{height:auto!important;overflow:visible!important;padding-bottom:90px}
+  .page{height:auto!important;overflow:visible!important;padding:12px;gap:14px;min-height:0}
+
+  .hdr{height:56px;padding:0 14px;gap:10px}
+  .logo-txt{display:none}
+  nav{display:none}
+  .hdr-r{gap:10px}
+  .live-badge{font-size:10px}
+  .role-sel{min-width:0;width:160px;font-size:12px;padding:6px 10px; -webkit-appearance: menulist;}
+
+  .mob-nav{display:block}
+  .mob-nav-inner{grid-template-columns:repeat(3,1fr)}
+
+  .kpi4,.kpi3{grid-template-columns:1fr 1fr}
+  .kpi-row[style*="repeat(5"]{grid-template-columns:1fr 1fr!important}
+  .kcard{padding:14px}
+  .kval{font-size:26px}
+
+  .mc-grid{grid-template-columns:1fr!important;flex:none}
+  
+  /* Adatta griglia grafici al mobile (1 colonna) */
+  .gr.c5050{grid-template-columns:1fr!important}
+  
+  .chart-wrap{height:220px!important;min-height:220px}
+  .slot-grid{grid-template-columns:repeat(3,1fr)}
+
+  .tlog-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.tlog{min-width:750px;font-size:12px}
+
+  #page-map{flex-direction:column!important;padding:0!important;height:auto!important}
+  .map-cont{height:60vw;min-height:280px;max-height:400px;flex:none;overflow:hidden}
+  .msp{display:none!important}
+  .msp-mobile-overlay{display:block}
+
+  .mc{top:10px;right:10px}
+  .mbtn{width:32px;height:32px;font-size:16px}
+  .mleg{padding:8px 10px;gap:10px;font-size:11px}
+  .ph{padding:10px 14px}
+  .pt{font-size:13px}
+  .pb{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="role-overlay" id="roleOverlay">
+  <div class="role-msg" id="roleMsg">
+    <span id="roleMsgText">CAMBIO ACCOUNT</span>
+    <small id="roleMsgSub">Applicazione filtri Privacy by Design in corso...</small>
+  </div>
+</div>
+
+<div class="hdr">
+  <div class="logo">
+    <a href="#" onclick="goPage('mission', document.querySelector('.nb')); return false;" class="logo-img-link" title="Torna alla Dashboard">
+      <img src="tuo-logo.png" alt="Logo Interporto" style="height:40px; width:auto; object-fit:contain; background:#333; padding:2px; border-radius:4px;">
+    </a>
+    <div class="logo-txt">INTERPORTO BOLOGNA </div>
+  </div>
+  <nav>
+    <button class="nb on" onclick="goPage('mission',this)">Pannello di Controllo</button>
+    <button class="nb" onclick="goPage('logistica',this)">Gestione Varchi e Transiti</button>
+    <button class="nb" onclick="goPage('map',this)">Mappa Interattiva</button>
+  </nav>
+  <div class="hdr-r">
+    <div class="live-badge"><div class="ld"></div>LIVE · <span id="clk">--:--:--</span></div>
+    <div class="notif-btn" title="Notifiche">🔔<div class="notif-badge">3</div></div>
+    <div class="role-wrap">
+      <select class="role-sel" id="roleSel" onchange="switchRole(this.value)">
+        <option value="admin">👤 Master Admin</option>
+        <option value="brt">🏢 BRT Corriere Espresso</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<nav class="mob-nav" id="mobNav">
+  <div class="mob-nav-inner">
+    <button class="mnb on" data-page="mission" onclick="goPageMob('mission',this)"><span class="mni">🎛️</span>Pannello</button>
+    <button class="mnb" data-page="logistica" onclick="goPageMob('logistica',this)"><span class="mni">🚛</span>Transiti</button>
+    <button class="mnb" data-page="map" onclick="goPageMob('map',this)"><span class="mni">🗺️</span>Mappa</button>
+  </div>
+</nav>
+
+<div class="msp-mobile-overlay" id="mspMobOverlay" onclick="closeMobMapPanel()"></div>
+<div class="msp-mobile" id="mspMob">
+  <div class="msp-mobile-drag"></div>
+  <div class="msp-mobile-header">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:18px;font-weight:700;color:var(--y)" id="mspMobTitle">Zona selezionata</div>
+      <button onclick="closeMobMapPanel()" style="background:transparent;border:none;color:var(--txd);font-size:22px;cursor:pointer;padding:4px">✕</button>
+    </div>
+  </div>
+  <div class="msp-mobile-body" id="mspMobBody"></div>
+</div>
+
+<div class="main">
+
+<div id="page-mission" class="page on">
+  
+  <div class="panel" style="border-left: 4px solid var(--blu);">
+    <div class="ph"><div class="pt">📊 CONTESTO STRATEGICO (EXECUTIVE SUMMARY)</div></div>
+    <div class="pb" style="font-size: 15px; line-height: 1.6; color: var(--txm);">
+      <strong style="color: var(--y); font-size:16px;">Il Problema:</strong> Oltre 130 tenant operano in modo frammentato. Gestione reattiva dei flussi causa congestione ai varchi e sprechi energetici.<br><br>
+      <strong style="color: var(--grn); font-size:16px;">La Soluzione:</strong> Collaborative Demand Intelligence. Modelli ML e NLP aggregano i dati per prevedere e orchestrare i flussi a 24-72h.
+    </div>
+  </div>
+
+  <div id="kpi-a" class="kpi-row kpi4">
+    <div class="kcard red"><div class="klbl">Indice Saturazione Varchi</div><div class="kval red">78<small style="font-size:16px">%</small></div><div class="ksub">▲ +4% vs ieri · 12 veicoli in attesa</div><div class="kbar"><div class="kbf red" style="width:78%"></div></div></div>
+    <div class="kcard yel"><div class="klbl">Radar Colli di Bottiglia</div><div class="kval yel">2</div><div class="ksub">ALLARMI ATTIVI · Varco Nord + CD1</div><div class="kbar"><div class="kbf yel" style="width:40%"></div></div></div>
+    <div class="kcard blu"><div class="klbl">Veicoli in Transito</div><div class="kval blu">432</div><div class="ksub">VEICOLI TRACCIATI IN TEMPO REALE</div><div class="kbar"><div class="kbf blu" style="width:65%"></div></div></div>
+    <div class="kcard grn"><div class="klbl">CO₂ Risparmiata Oggi</div><div class="kval grn">1.2<small style="font-size:16px">t</small></div><div class="ksub">▼ -20% vs media (Routing AI attivo)</div><div class="kbar"><div class="kbf grn" style="width:55%"></div></div></div>
+  </div>
+  
+  <div id="kpi-n" class="kpi-row kpi3" style="display:none">
+    <div class="kcard blu"><div class="klbl">Veicoli Flotta BRT</div><div class="kval blu">12</div><div class="ksub">VEICOLI ATTIVI · 3 in arrivo</div><div class="kbar"><div class="kbf blu" style="width:40%"></div></div></div>
+    <div class="kcard grn"><div class="klbl">Puntualità Consegne</div><div class="kval grn">94<small style="font-size:16px">%</small></div><div class="ksub">▲ +2% vs settimana scorsa</div><div class="kbar"><div class="kbf grn" style="width:94%"></div></div></div>
+    <div class="kcard yel"><div class="klbl">Riprogrammazioni AI</div><div class="kval yel">3</div><div class="ksub">OGGI · AUTOMATIZZATE DA AI</div><div class="kbar"><div class="kbf yel" style="width:25%"></div></div></div>
+  </div>
+
+  <div class="mc-grid">
+    <div class="mc-left">
+      <div class="gr c5050" style="min-height: 0; flex:1;">
+        <div class="panel">
+          <div class="ph"><div class="pt">⚡ Previsione Traffico a 72h</div><span style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--txd)">MODELLO LSTM</span></div>
+          <div class="pb"><div class="chart-wrap"><canvas id="chart1"></canvas></div></div>
+        </div>
+        
+        <div class="panel">
+          <div class="ph"><div class="pt">⏱️ Tempo Attesa Varchi (Minuti)</div><span style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--grn)">▼ -25% AI</span></div>
+          <div class="pb"><div class="chart-wrap"><canvas id="chart2"></canvas></div></div>
+        </div>
+        
+        <div class="panel">
+          <div class="ph"><div class="pt">📉 Trend Risparmio CO₂ (12 Mesi)</div></div>
+          <div class="pb"><div class="chart-wrap"><canvas id="chart3"></canvas></div></div>
+        </div>
+        
+        <div class="panel">
+          <div class="ph"><div class="pt">📦 Flussi per Classe Logistica</div><span style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--y)">PRIVACY BY DESIGN</span></div>
+          <div class="pb"><div class="chart-wrap"><canvas id="chart4"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mc-right">
+      <div class="panel" style="flex:1;overflow:hidden">
+        <div class="ph"><div class="pt">🤖 Motore di Risoluzione AI</div></div>
+        <div class="pb" style="overflow-y:auto">
+          <div class="alert crit">
+            <div class="ameta">🔴 CRITICO · Varco Nord · 16:00</div>
+            <div class="atxt">Congestione critica prevista. Percorso alternativo pronto. Deviazione Varco Sud suggerita.</div>
+            <button class="btn-eng" onclick="engage(this,'Percorso ottimizzato — Decongestionamento Varco Nord in corso...')">- 20% attesa</button>
+          </div>
+          <div class="alert warn">
+            <div class="ameta">🟡 ATTENZIONE · CD1 · 95% SAT</div>
+            <div class="atxt">Zona CD1 al limite della capacità. Riassegnazione di 3 slot a CD2 raccomandata dall'intelligenza artificiale.</div>
+            <button class="btn-eng" onclick="engage(this,'Slot riassegnati a CD2 — Bilanciamento completato.')">Riassegna Slot</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-logistica" class="page">
+  <div id="transit-banner-admin" style="background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:12px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0">
+    <span style="font-size:22px">🔓</span>
+    <div>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--grn)">MASTER ADMIN — Accesso Globale</div>
+      <div style="font-size:13px;color:var(--txd); margin-top:4px;">Tutti i dati operativi sono visibili. Permessi globali attivi su flotte e varchi.</div>
+    </div>
+  </div>
+  <div id="transit-banner-brt" style="display:none;background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.3);border-radius:8px;padding:12px 18px;align-items:center;gap:14px;flex-shrink:0">
+    <span style="font-size:22px">🔒</span>
+    <div>
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--y)">BRT CORRIERE ESPRESSO — Accesso Limitato (Privacy by Design)</div>
+      <div style="font-size:13px;color:var(--txd); margin-top:4px;">I dati della concorrenza sono oscurati. Visualizzazione in chiaro limitata ai veicoli autorizzati BRT.</div>
+    </div>
+  </div>
+
+  <div class="gr c5050" style="flex-shrink:0">
+    <div class="panel">
+      <div class="ph"><div class="pt">📋 Tabellone Assegnazioni — Varco Nord</div><span style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--red); font-weight:bold;">⚠ CONGESTO</span></div>
+      <div class="pb">
+        <div class="slot-grid">
+          <div class="slot busy"><div style="font-size:11px">08:00</div><div style="font-weight:700">AB724EF</div><div style="font-size:10px">BRT</div></div>
+          <div class="slot busy"><div style="font-size:11px">08:30</div><div style="font-weight:700">FE219XK</div><div style="font-size:10px">DSV SpA</div></div>
+          <div class="slot res"><div style="font-size:11px">09:00</div><div style="font-weight:700">BG431LP</div><div style="font-size:10px">BRT</div></div>
+          <div class="slot free"><div style="font-size:11px">09:30</div><div style="font-weight:700">—</div><div style="font-size:10px">LIBERO</div></div>
+          <div class="slot busy"><div style="font-size:11px">10:00</div><div style="font-weight:700">CH117ZR</div><div style="font-size:10px">Ceva</div></div>
+          <div class="slot busy"><div style="font-size:11px">10:30</div><div style="font-weight:700">MO882WS</div><div style="font-size:10px">Trans C.</div></div>
+          <div class="slot res"><div style="font-size:11px">11:00</div><div style="font-weight:700">BO345KL</div><div style="font-size:10px">Geodis</div></div>
+          <div class="slot free"><div style="font-size:11px">11:30</div><div style="font-weight:700">—</div><div style="font-size:10px">LIBERO</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">🚛 Veicoli in Attesa — Tempo Reale</div></div>
+      <div class="pb" style="padding:0">
+        <table class="gtbl">
+          <thead><tr><th>Targa</th><th>Azienda</th><th>Dest.</th><th>Attesa</th><th>Stato</th></tr></thead>
+          <tbody>
+            <tr><td>AB724EF</td><td>BRT Corriere</td><td>CD1</td><td style="color:var(--red); font-weight:bold;">34 min</td><td><span class="pill pill-r">CRITICO</span></td></tr>
+            <tr><td>FE219XK</td><td>DSV SpA</td><td>3.2</td><td style="color:var(--red); font-weight:bold;">29 min</td><td><span class="pill pill-r">CRITICO</span></td></tr>
+            <tr><td>BG431LP</td><td>BRT Corriere</td><td>1.2</td><td style="color:var(--y)">18 min</td><td><span class="pill pill-y">ATTESA</span></td></tr>
+            <tr><td>CH117ZR</td><td>Ceva Logistics</td><td>4.3</td><td style="color:var(--y)">14 min</td><td><span class="pill pill-y">ATTESA</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="flex:1;min-height:0">
+    <div class="ph">
+      <div class="pt">📡 Registro Transiti — Rilevamento Veicoli</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="ld"></div>
+        <span style="font-family:JetBrains Mono,monospace;font-size:12px;color:var(--grn); font-weight:bold;">LIVE · <span id="logTime">--:--:--</span></span>
+        <div id="hash-toggle-wrap">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--txd)">
+            <input type="checkbox" id="hashToggle" onchange="renderTransitLog()" style="accent-color:var(--y); width:16px; height:16px;"> Hash Targhe
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="tlog-wrap">
+      <table class="tlog" id="transitTable">
+        <thead>
+          <tr>
+            <th style="width:40px"></th>
+            <th>Targa / ID</th>
+            <th>Tipo</th>
+            <th>Azienda / Vettore</th>
+            <th>Destinazione</th>
+            <th>Carico</th>
+            <th>Arrivo Stimato</th>
+            <th>Velocità</th>
+            <th>Stato</th>
+            <th>Privacy</th>
+          </tr>
+        </thead>
+        <tbody id="transitBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="page-map" class="page">
+  <div class="map-cont" id="mapCont">
+    
+    <svg class="map-svg" id="mapSvg" viewBox="0 0 1400 560" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <style>
+          .za{cursor:pointer;transition:fill .3s,filter .3s,opacity .4s;}
+          .za:hover{filter:brightness(1.5);}
+          .za.locked{cursor:not-allowed;opacity:.2!important; filter:grayscale(100%);}
+          .za.locked:hover{filter:grayscale(100%) brightness(1.2) !important;}
+          .zl{font-family:'JetBrains Mono',monospace;font-weight:700;fill:rgba(255,255,255,.95);pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
+        </style>
+      </defs>
+
+      <line x1="30" y1="200" x2="900" y2="200" stroke="rgba(255,255,255,.06)" stroke-width="12"/>
+      <line x1="100" y1="30" x2="100" y2="320" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+      <line x1="195" y1="30" x2="195" y2="280" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+      <line x1="290" y1="30" x2="290" y2="260" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+      <line x1="385" y1="30" x2="385" y2="240" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+      <line x1="480" y1="30" x2="480" y2="240" stroke="rgba(255,255,255,.04)" stroke-width="5"/>
+      <line x1="570" y1="20" x2="900" y2="20" stroke="rgba(255,255,255,.04)" stroke-width="8"/>
+      <line x1="660" y1="20" x2="660" y2="220" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+      <line x1="760" y1="20" x2="760" y2="200" stroke="rgba(255,255,255,.04)" stroke-width="5"/>
+      <line x1="860" y1="20" x2="860" y2="200" stroke="rgba(255,255,255,.04)" stroke-width="5"/>
+      <line x1="960" y1="20" x2="960" y2="360" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+      <line x1="1060" y1="20" x2="1060" y2="360" stroke="rgba(255,255,255,.04)" stroke-width="5"/>
+      <line x1="1160" y1="20" x2="1160" y2="360" stroke="rgba(255,255,255,.04)" stroke-width="5"/>
+      <line x1="1260" y1="20" x2="1260" y2="360" stroke="rgba(255,255,255,.04)" stroke-width="5"/>
+      <line x1="900" y1="180" x2="1390" y2="180" stroke="rgba(255,255,255,.05)" stroke-width="10"/>
+
+      <line x1="60" y1="480" x2="1380" y2="440" stroke="rgba(255,204,0,.2)" stroke-width="12" stroke-linecap="square"/>
+      <line x1="60" y1="496" x2="1380" y2="456" stroke="rgba(255,204,0,.15)" stroke-width="6"/>
+      <g stroke="rgba(255,204,0,.15)" stroke-width="2">
+        <line x1="120" y1="468" x2="130" y2="504"/><line x1="180" y1="465" x2="190" y2="501"/>
+        <line x1="240" y1="462" x2="250" y2="498"/><line x1="300" y1="459" x2="310" y2="495"/>
+        <line x1="360" y1="456" x2="370" y2="492"/><line x1="420" y1="453" x2="430" y2="489"/>
+        <line x1="480" y1="450" x2="490" y2="486"/><line x1="540" y1="447" x2="550" y2="483"/>
+        <line x1="600" y1="444" x2="610" y2="480"/><line x1="660" y1="441" x2="670" y2="477"/>
+        <line x1="720" y1="438" x2="730" y2="474"/><line x1="780" y1="435" x2="790" y2="471"/>
+        <line x1="840" y1="432" x2="850" y2="468"/><line x1="900" y1="429" x2="910" y2="465"/>
+        <line x1="960" y1="426" x2="970" y2="462"/><line x1="1020" y1="423" x2="1030" y2="459"/>
+        <line x1="1080" y1="420" x2="1090" y2="456"/><line x1="1140" y1="417" x2="1150" y2="453"/>
+        <line x1="1200" y1="414" x2="1210" y2="450"/><line x1="1260" y1="411" x2="1270" y2="447"/>
+        <line x1="1320" y1="408" x2="1330" y2="444"/>
+      </g>
+      <text x="700" y="520" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:11px;fill:rgba(255,204,0,.5);letter-spacing:.12em">◄ LINEA FERROVIARIA RFI — BOLOGNA INTERPORTO ►</text>
+
+      <g class="zone-g" data-zone="4.5"><rect class="za" x="12" y="330" width="72" height="52" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="48" y="357" font-size="10">4.5</text></g>
+      <g class="zone-g" data-zone="4.2"><rect class="za" x="12" y="265" width="72" height="52" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="48" y="292" font-size="10">4.2</text></g>
+      <g class="zone-g" data-zone="1.1"><rect class="za" x="100" y="30" width="88" height="100" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="144" y="82" font-size="11">1.1</text></g>
+      <g class="zone-g" data-zone="1.2"><rect class="za" x="100" y="145" width="88" height="42" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="144" y="167" font-size="10">1.2 (BRT)</text></g>
+      <g class="zone-g" data-zone="1.3"><rect class="za" x="100" y="200" width="88" height="38" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="144" y="220" font-size="10">1.3</text></g>
+      <g class="zone-g" data-zone="2.1"><rect class="za" x="200" y="30" width="82" height="58" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="241" y="61" font-size="10">2.1</text></g>
+      <g class="zone-g" data-zone="2.2"><rect class="za" x="200" y="102" width="82" height="66" rx="4" fill="rgba(255,153,0,.2)" stroke="rgba(255,153,0,.5)" stroke-width="1.5"/><text class="zl" x="241" y="136" font-size="10">2.2</text></g>
+      <g class="zone-g" data-zone="2.3"><rect class="za" x="200" y="182" width="82" height="50" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="241" y="208" font-size="10">2.3</text></g>
+      <g class="zone-g" data-zone="3.1"><rect class="za" x="295" y="30" width="78" height="42" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="334" y="52" font-size="10">3.1</text></g>
+      <g class="zone-g" data-zone="3.2"><rect class="za" x="295" y="86" width="78" height="58" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="334" y="116" font-size="10">3.2</text></g>
+      <g class="zone-g" data-zone="3.3"><rect class="za" x="295" y="158" width="78" height="46" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="334" y="182" font-size="10">3.3</text></g>
+      <g class="zone-g" data-zone="CD1"><rect class="za" x="385" y="28" width="120" height="88" rx="4" fill="rgba(255,68,68,.3)" stroke="rgba(255,68,68,.8)" stroke-width="2"/><text class="zl" x="445" y="74" font-size="14">CD1</text></g>
+      <g class="zone-g" data-zone="CD2"><rect class="za" x="385" y="130" width="120" height="76" rx="4" fill="rgba(255,153,0,.2)" stroke="rgba(255,153,0,.6)" stroke-width="1.5"/><text class="zl" x="445" y="169" font-size="11">CD2</text></g>
+      <g class="zone-g" data-zone="4.3"><rect class="za" x="516" y="28" width="96" height="78" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="564" y="68" font-size="10">4.3</text></g>
+      <g class="zone-g" data-zone="4.4"><rect class="za" x="516" y="118" width="96" height="66" rx="4" fill="rgba(255,153,0,.2)" stroke="rgba(255,153,0,.5)" stroke-width="1.5"/><text class="zl" x="564" y="152" font-size="10">4.4</text></g>
+      <g class="zone-g" data-zone="Centro Direzionale"><rect class="za" x="622" y="28" width="116" height="100" rx="4" fill="rgba(255,68,68,.25)" stroke="rgba(255,68,68,.7)" stroke-width="2"/><text class="zl" x="680" y="68" font-size="9">CENTRO</text><text class="zl" x="680" y="82" font-size="9">DIREZ.</text></g>
+      <g class="zone-g" data-zone="Ribalta Doganale"><rect class="za" x="622" y="142" width="116" height="60" rx="4" fill="rgba(0,230,118,.18)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="680" y="164" font-size="8.5">RIBALTA</text><text class="zl" x="680" y="176" font-size="8.5">DOGANALE</text></g>
+      <g class="zone-g" data-zone="Palazzina RFI"><rect class="za" x="748" y="28" width="100" height="70" rx="4" fill="rgba(0,180,216,.2)" stroke="rgba(0,180,216,.5)" stroke-width="1.5"/><text class="zl" x="798" y="55" font-size="8.5">PALAZZINA</text><text class="zl" x="798" y="68" font-size="8.5">RFI</text></g>
+      <g class="zone-g" data-zone="Logisana"><rect class="za" x="748" y="112" width="100" height="56" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="798" y="142" font-size="9">LOGISANA</text></g>
+
+      <line x1="860" y1="10" x2="870" y2="420" stroke="rgba(255,255,255,.08)" stroke-width="16"/>
+      <g class="zone-g" data-zone="5.1"><rect class="za" x="878" y="28" width="78" height="60" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="917" y="59" font-size="10">5.1</text></g>
+      <g class="zone-g" data-zone="5.2"><rect class="za" x="878" y="100" width="78" height="55" rx="4" fill="rgba(255,153,0,.2)" stroke="rgba(255,153,0,.5)" stroke-width="1.5"/><text class="zl" x="917" y="129" font-size="10">5.2</text></g>
+      <g class="zone-g" data-zone="5.3"><rect class="za" x="878" y="168" width="78" height="44" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="917" y="191" font-size="10">5.3</text></g>
+      <g class="zone-g" data-zone="6.1"><rect class="za" x="968" y="78" width="68" height="44" rx="4" fill="rgba(0,180,216,.2)" stroke="rgba(0,180,216,.5)" stroke-width="1.5"/><text class="zl" x="1002" y="101" font-size="10">6.1</text></g>
+      <g class="zone-g" data-zone="6.2"><rect class="za" x="968" y="134" width="68" height="50" rx="4" fill="rgba(255,153,0,.2)" stroke="rgba(255,153,0,.5)" stroke-width="1.5"/><text class="zl" x="1002" y="160" font-size="10">6.2</text></g>
+      <g class="zone-g" data-zone="6.3"><rect class="za" x="968" y="196" width="68" height="42" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="1002" y="218" font-size="10">6.3</text></g>
+      <g class="zone-g" data-zone="6.4"><rect class="za" x="968" y="250" width="68" height="38" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="1002" y="270" font-size="10">6.4</text></g>
+      <g class="zone-g" data-zone="8.0"><rect class="za" x="1048" y="28" width="72" height="52" rx="4" fill="rgba(155,89,182,.2)" stroke="rgba(155,89,182,.5)" stroke-width="1.5"/><text class="zl" x="1084" y="55" font-size="10">8.0</text></g>
+      <g class="zone-g" data-zone="8.1"><rect class="za" x="1048" y="92" width="72" height="40" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="1084" y="113" font-size="10">8.1</text></g>
+      <g class="zone-g" data-zone="8.2"><rect class="za" x="1048" y="144" width="72" height="50" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="1084" y="170" font-size="10">8.2</text></g>
+      <g class="zone-g" data-zone="9.1"><rect class="za" x="1132" y="28" width="68" height="40" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="1166" y="49" font-size="10">9.1</text></g>
+      <g class="zone-g" data-zone="9.2"><rect class="za" x="1132" y="80" width="68" height="48" rx="4" fill="rgba(255,153,0,.2)" stroke="rgba(255,153,0,.5)" stroke-width="1.5"/><text class="zl" x="1166" y="105" font-size="10">9.2</text></g>
+      <g class="zone-g" data-zone="9.3"><rect class="za" x="1132" y="140" width="68" height="46" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="1166" y="164" font-size="10">9.3</text></g>
+      <g class="zone-g" data-zone="9.4"><rect class="za" x="1132" y="198" width="68" height="36" rx="4" fill="rgba(255,68,68,.25)" stroke="rgba(255,68,68,.6)" stroke-width="1.5"/><text class="zl" x="1166" y="218" font-size="10">9.4</text></g>
+      
+      <g class="zone-g" data-zone="15.1"><rect class="za" x="1212" y="180" width="66" height="30" rx="4" fill="rgba(255,68,68,.25)" stroke="rgba(255,68,68,.6)" stroke-width="1.5"/><text class="zl" x="1245" y="195" font-size="10">15.1</text></g>
+      <g class="zone-g" data-zone="15.2"><rect class="za" x="1290" y="180" width="66" height="30" rx="4" fill="rgba(255,68,68,.25)" stroke="rgba(255,68,68,.6)" stroke-width="1.5"/><text class="zl" x="1323" y="195" font-size="10">15.2</text></g>
+      <g class="zone-g" data-zone="14.1.A"><rect class="za" x="1212" y="215" width="66" height="30" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="1245" y="230" font-size="9">14.1A</text></g>
+      <g class="zone-g" data-zone="14.B"><rect class="za" x="1290" y="215" width="66" height="30" rx="4" fill="rgba(0,230,118,.2)" stroke="rgba(0,230,118,.5)" stroke-width="1.5"/><text class="zl" x="1323" y="230" font-size="9">14.B</text></g>
+      <g class="zone-g" data-zone="14.3"><rect class="za" x="1212" y="250" width="66" height="30" rx="4" fill="rgba(255,204,0,.15)" stroke="rgba(255,204,0,.5)" stroke-width="1.5"/><text class="zl" x="1245" y="265" font-size="9">14.3</text></g>
+      <g class="zone-g" data-zone="14.2"><rect class="za" x="1212" y="285" width="66" height="30" rx="4" fill="rgba(155,89,182,.2)" stroke="rgba(155,89,182,.5)" stroke-width="1.5"/><text class="zl" x="1245" y="300" font-size="10">14.2</text></g>
+
+      <text x="440" y="13" text-anchor="middle" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;fill:rgba(255,255,255,.3);letter-spacing:.15em;font-weight:700">SETTORE OVEST</text>
+      <text x="1130" y="13" text-anchor="middle" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;fill:rgba(255,255,255,.3);letter-spacing:.15em;font-weight:700">SETTORE EST</text>
+    </svg>
+
+    <div id="mkLayer" style="position:absolute;inset:0;pointer-events:none;z-index:9"></div>
+
+    <div class="mc">
+      <button class="mbtn" onclick="zMap(1.2)">+</button>
+      <button class="mbtn" onclick="zMap(0.8)">−</button>
+      <button class="mbtn" style="font-size:14px" onclick="rMap()">↺</button>
+    </div>
+    <div class="mleg">
+      <div class="li"><div class="ld2" style="background:var(--red);opacity:.8"></div>Alta >75%</div>
+      <div class="li"><div class="ld2" style="background:var(--ora);opacity:.8"></div>Media 50-75%</div>
+      <div class="li"><div class="ld2" style="background:var(--y);opacity:.8"></div>Normale 25-50%</div>
+      <div class="li"><div class="ld2" style="background:var(--grn);opacity:.8"></div>Libera &lt;25%</div>
+    </div>
+  </div>
+  
+  <div class="msp">
+    <div class="msph">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;color:var(--y)">🗺 Dati Zona</div>
+      <div style="font-size:13px;color:var(--txd);margin-top:4px" id="mspSub">Clicca una zona per i dettagli</div>
+    </div>
+    <div class="mspb" id="mspBody">
+      <div style="text-align:center;padding:40px 0;color:var(--txd)">
+        <div style="font-size:36px;margin-bottom:12px">📍</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.08em; font-weight:700;">SELEZIONA UNA ZONA</div>
+        <div style="font-size:13px;margin-top:8px">Clicca su un blocco della mappa per i dati in tempo reale</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════
+const BRT_ZONES = ['1.2']; 
+const ZONE_DATA = {
+  // ── SETTORE OVEST ──
+  "Ribalta Doganale":{tenants:["Autotrasporti Palena V. & C.","Betti Impianti Elettrici","Vanges","Ribalta Doganale"],sat:35,satColor:"grn",rec:"✅ Zona operativa. Flusso doganale regolare."},
+  "Palazzina RFI":{tenants:["Bologna Gru","Con.S.A.R.","Mercitalia Intermodal"],sat:55,satColor:"ora",rec:"⚠️ Attività ferroviaria media."},
+  "Logisana":{tenants:["Lapsy"],sat:22,satColor:"grn",rec:"✅ Bassa saturazione. Capacità piena disponibile."},
+  "Centro Direzionale":{tenants:["Multi-tenant (19 aziende)"],sat:90,satColor:"red",rec:"🔴 CRITICO: Altissima occupazione."},
+  "CD1":{tenants:["Geodis Logistics","Yoox Net a Porter"],sat:95,satColor:"red",rec:"⚠️ Rischio congestione Varco Nord. Deviazione necessaria."},
+  "CD2":{tenants:["Geodis Logistics"],sat:68,satColor:"ora",rec:"⚠️ Saturazione in crescita."},
+  "1.1":{tenants:["Multi-tenant (6 aziende)"],sat:70,satColor:"yel",rec:"📊 Saturazione nella norma."},
+  "1.2":{tenants:["BRT Corriere Espresso"],sat:28,satColor:"grn",rec:"✅ Zona libera. Slot disponibili nel pomeriggio."},
+  "1.3":{tenants:["Tgroup"],sat:42,satColor:"yel",rec:"📊 Operatività regolare."},
+  "2.1":{tenants:["Arco Spedizioni","Sintra"],sat:45,satColor:"yel",rec:"📊 Flusso nella norma."},
+  "2.2":{tenants:["Crane","Due Torri","Trans Cargo","XP Express"],sat:72,satColor:"ora",rec:"⚠️ Zona multi-tenant ad alta attività."},
+  "2.3":{tenants:["M.A. Grendi","UBV Group"],sat:38,satColor:"grn",rec:"✅ Buona disponibilità."},
+  "3.1":{tenants:["S.T.L. Trasporti"],sat:55,satColor:"ora",rec:"⚠️ Picco operativo previsto a breve."},
+  "3.2":{tenants:["DSV SpA","Gruppo Laghezza"],sat:61,satColor:"yel",rec:"📊 Traffico moderato."},
+  "3.3":{tenants:["Bresciafiori","InPost","PNP spa"],sat:33,satColor:"grn",rec:"✅ Zona efficiente."},
+  "4.2":{tenants:["Foppiani Shipping"],sat:25,satColor:"grn",rec:"✅ Zona pronta per prossimi arrivi."},
+  "4.3":{tenants:["Ceva Logistics","Teloni Tosetto", "ecc."],sat:65,satColor:"yel",rec:"📊 Zona attiva."},
+  "4.4":{tenants:["Arco Logistica","Geodis"],sat:58,satColor:"ora",rec:"⚠️ Traffico in aumento."},
+  "4.5":{tenants:["Rentokil", "Eurocot"],sat:44,satColor:"yel",rec:"📊 Operatività normale."},
+  // ── SETTORE EST ──
+  "5.1":{tenants:["Raben Italy","Univergomma"],sat:52,satColor:"ora",rec:"⚠️ Monitoraggio attivo."},
+  "5.2":{tenants:["GRUBER Logistics","Stante"],sat:60,satColor:"yel",rec:"📊 Transiti internazionali previsti."},
+  "5.3":{tenants:["Due Torri","Torello"],sat:35,satColor:"grn",rec:"✅ Zona efficiente."},
+  "6.1":{tenants:["Mercitalia Logistics"],sat:48,satColor:"yel",rec:"📊 Attività nella norma."},
+  "6.2":{tenants:["Hellmann Worldwide", "ecc."],sat:75,satColor:"red",rec:"🔴 Gestione slot raccomandata."},
+  "6.3":{tenants:["Widem Logistics","Plus Scrl"],sat:42,satColor:"yel",rec:"📊 Operatività stabile."},
+  "6.4":{tenants:["Storopack Italia"],sat:30,satColor:"grn",rec:"✅ Zona libera."},
+  "8.0":{tenants:["Applied Medical","Gruppo CDS"],sat:80,satColor:"red",rec:"🔴 Logistica prioritaria. Fast-track attivo."},
+  "8.1":{tenants:["Torello"],sat:33,satColor:"grn",rec:"✅ Operazioni regolari."},
+  "8.2":{tenants:["Prologis","Wakame"],sat:55,satColor:"ora",rec:"⚠️ Cantiere attivo. Accesso limitato."},
+  "9.1":{tenants:["Susa"],sat:28,satColor:"grn",rec:"✅ Zona libera."},
+  "9.2":{tenants:["Carcano Logistics","CLBT"],sat:62,satColor:"yel",rec:"📊 Protocollo sicurezza attivo."},
+  "9.3":{tenants:["XPO Logistics","Fintyre"],sat:68,satColor:"ora",rec:"⚠️ Volumi e-commerce in crescita."},
+  "9.4":{tenants:["DHL Express"],sat:88,satColor:"red",rec:"🔴 Saturazione critica. Ampliamento fasce necessario."},
+  "14.1.A":{tenants:["Pallex Italia"],sat:55,satColor:"ora",rec:"⚠️ Picco distribuzione in corso."},
+  "14.B":{tenants:["Due Torri"],sat:38,satColor:"grn",rec:"✅ Zona libera al 62%."},
+  "14.2":{tenants:["Jaguar Land Rover"],sat:45,satColor:"yel",rec:"📊 Temperatura e umidità controllate."},
+  "14.3":{tenants:["Champion Europe"],sat:50,satColor:"ora",rec:"⚠️ Picco stagionale gestito dall'AI."},
+  "15.1":{tenants:["Yoox Net a Porter"],sat:92,satColor:"red",rec:"🔴 PICCO CRITICO. Intervento manuale richiesto."},
+  "15.2":{tenants:["Yoox Net a Porter"],sat:88,satColor:"red",rec:"🔴 Coordinare overflow container."}
+};
+
+const SAT_COLORS = {red:'#FF4444',ora:'#FF9900',yel:'#FFCC00',grn:'#00E676',blu:'#00B4D8'};
+
+// ─── TRANSIT LOG DATA ───
+const TRANSIT_DATA = [
+  {id:'BRT-001',plate:'AB724EF',type:'truck',isBrt:true,company:'BRT Corriere Espresso',dest:'CD1 — Bay 3',cargo:'Pacchi Express (1.4t)',eta:'08:12',etaMins:4,speed:'38 km/h',status:'arriving',lat:48,lng:22},
+  {id:'BRT-002',plate:'AB388QR',type:'truck',isBrt:true,company:'BRT Corriere Espresso',dest:'1.2 — Bay 1',cargo:'Smistamento (0.8t)',eta:'08:34',etaMins:26,speed:'67 km/h',status:'enroute',lat:30,lng:35},
+  {id:'BRT-003',plate:'BO217KX',type:'truck',isBrt:true,company:'BRT Corriere Espresso',dest:'4.4 — Bay A',cargo:'Merce Varia (2.1t)',eta:'09:05',etaMins:57,speed:'72 km/h',status:'enroute',lat:62,lng:28},
+  {id:'BRT-004',plate:'BO991LZ',type:'truck',isBrt:true,company:'BRT Corriere Espresso',dest:'1.2 — Bay 2',cargo:'Giacenze (0.6t)',eta:'10:15',etaMins:127,speed:'81 km/h',status:'scheduled',lat:20,lng:55},
+  {id:'BRT-005',plate:'MO114WP',type:'van',isBrt:true,company:'BRT Corriere Espresso',dest:'1.2 — Bay 4',cargo:'Espresso Urgente (0.2t)',eta:'08:48',etaMins:40,speed:'54 km/h',status:'enroute',lat:75,lng:18},
+  {id:'OT-001',plate:'FE219XK',type:'truck',isBrt:false,company:'DSV SpA',dest:'3.2 — Bay 1',cargo:'Componentistica',eta:'08:45',etaMins:37,speed:'45 km/h',status:'arriving',lat:42,lng:60},
+  {id:'OT-003',plate:'CH117ZR',type:'truck',isBrt:false,company:'Ceva Logistics',dest:'4.3 — Bay 2',cargo:'Merci generali',eta:'09:20',etaMins:72,speed:'58 km/h',status:'enroute',lat:78,lng:48},
+  {id:'OT-004',plate:'MO882WS',type:'truck',isBrt:false,company:'Trans Cargo',dest:'2.2 — Bay C',cargo:'Materiali edili',eta:'08:30',etaMins:22,speed:'71 km/h',status:'arriving',lat:38,lng:82},
+  {id:'OT-005',plate:'RM501QB',type:'van',isBrt:false,company:'InPost',dest:'3.3 — Bay B',cargo:'E-commerce pkg',eta:'08:55',etaMins:47,speed:'48 km/h',status:'enroute',lat:65,lng:65},
+  {id:'OT-008',plate:'BO345KL',type:'truck',isBrt:false,company:'Geodis Logistics',dest:'CD2 — Bay 1',cargo:'Farmaceutici',eta:'08:20',etaMins:12,speed:'29 km/h',status:'arriving',lat:52,lng:38},
+  {id:'TR-001',plate:'IT-MRCI-4421',type:'train',isBrt:false,company:'Mercitalia Intermodal',dest:'Terminal RFI — Binario 2',cargo:'24 container 40ft',eta:'09:15',etaMins:67,speed:'110 km/h',status:'enroute',lat:88,lng:55},
+];
+
+// ─── STATE ───
+let role = 'admin';
+let mapScale = 1, mapTx = {x:0,y:0}, isDrag = false, dragS = {x:0,y:0};
+let chartInstances = {};
+
+// ═══════════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════════
+function tick(){
+  const t = new Date().toLocaleTimeString('it-IT');
+  document.getElementById('clk').textContent = t;
+  document.getElementById('logTime').textContent = t;
+}
+setInterval(tick,1000); tick();
+
+// ═══════════════════════════════════════════════════
+//  TOAST & BUTTON
+// ═══════════════════════════════════════════════════
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent='✓ '+msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+function engage(btn,msg){btn.textContent='✓ ATTIVATO';btn.classList.add('done');btn.disabled=true;toast(msg);}
+
+// ═══════════════════════════════════════════════════
+//  PAGE NAV
+// ═══════════════════════════════════════════════════
+function goPage(p,btn){
+  document.querySelectorAll('.page').forEach(x => { x.classList.remove('on'); });
+  document.querySelectorAll('.nb').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.mnb').forEach(x => x.classList.remove('on'));
+  
+  const targetPage = document.getElementById('page-'+p);
+  if(targetPage) targetPage.classList.add('on');
+  
+  if(btn) btn.classList.add('on');
+  
+  const mobileBtn = document.querySelector(`.mnb[data-page="${p}"]`);
+  if(mobileBtn) mobileBtn.classList.add('on');
+  
+  if(p==='mission') {
+    setTimeout(()=> { initChart('chart1'); initChart('chart2'); initChart('chart3'); initChart('chart4'); }, 100);
+  }
+  if(p==='logistica') renderTransitLog();
+  if(p==='map') renderMapMarkers();
+  
+  window.scrollTo(0,0);
+}
+
+function goPageMob(p, btn) {
+  goPage(p, btn);
+}
+
+// ═══════════════════════════════════════════════════
+//  ROLE SWITCH 
+// ═══════════════════════════════════════════════════
+function switchRole(val){
+  role = val;
+  const overlay = document.getElementById('roleOverlay');
+  const msg = document.getElementById('roleMsg');
+  const msgTxt = document.getElementById('roleMsgText');
+  const msgSub = document.getElementById('roleMsgSub');
+
+  if(val==='brt'){
+    msgTxt.textContent = '🔒 BRT CORRIERE ESPRESSO';
+    msgSub.textContent = 'Applicazione filtri Privacy by Design in corso...';
+  } else {
+    msgTxt.textContent = '🔓 MASTER ADMIN';
+    msgSub.textContent = 'Caricamento vista globale...';
+  }
+
+  overlay.classList.add('flash');
+  msg.classList.add('show');
+
+  setTimeout(()=>{
+    applyRoleToUI();
+    msg.classList.remove('show');
+    setTimeout(()=>overlay.classList.remove('flash'),400);
+  }, 900);
+}
+
+function applyRoleToUI(){
+  const isAdmin = role === 'admin';
+
+  document.getElementById('kpi-a').style.display = isAdmin ? 'grid' : 'none';
+  document.getElementById('kpi-n').style.display = isAdmin ? 'none' : 'grid';
+
+  document.getElementById('transit-banner-admin').style.display = isAdmin ? 'flex' : 'none';
+  document.getElementById('transit-banner-brt').style.display = isAdmin ? 'none' : 'flex';
+  document.getElementById('hash-toggle-wrap').style.display = isAdmin ? 'flex' : 'none';
+
+  document.querySelectorAll('.zone-g').forEach(g=>{
+    const z = g.dataset.zone;
+    const a = g.querySelector('.za, .zone-a');
+    if(!isAdmin && !BRT_ZONES.includes(z)){
+      a.style.opacity = '.18';
+      a.classList.add('locked');
+    } else {
+      a.style.opacity = '1';
+      a.classList.remove('locked');
+    }
+  });
+
+  renderTransitLog();
+  renderMapMarkers();
+}
+
+// ═══════════════════════════════════════════════════
+//  TRANSIT LOG RENDERER 
+// ═══════════════════════════════════════════════════
+function renderTransitLog(){
+  const isAdmin = role === 'admin';
+  const showHash = isAdmin && document.getElementById('hashToggle') && document.getElementById('hashToggle').checked;
+  const tbody = document.getElementById('transitBody');
+
+  const typeIcon = {truck:'🚛', van:'🚐', train:'🚂'};
+  const statusMap = {
+    arriving: '<span class="pill pill-r">ARRIVO</span>',
+    enroute: '<span class="pill pill-y">IN VIAGGIO</span>',
+    scheduled: '<span class="pill pill-b">PROGRAM.</span>',
+  };
+
+  let rows = '';
+  TRANSIT_DATA.forEach(v=>{
+    const isOwn = v.isBrt;
+    const isTrain = v.type === 'train';
+    const showData = isAdmin || isOwn;
+
+    let rowClass = isOwn ? 'row-nexus' : (isTrain ? 'row-train' : 'row-other');
+    if(!showData) rowClass += ' row-locked';
+
+    let plateCell = showData 
+      ? (showHash && !isOwn ? `<span class="tplate plate-hash">${hashPlate(v.plate)}</span>` : `<span class="tplate plate-clear" style="color:${isOwn?'var(--y)':'var(--tx)'}">${v.plate}</span>`)
+      : `<span class="priv-cell blur-on"><span class="priv-icon">🔒</span>${v.plate}</span>`;
+
+    let companyCell = showData 
+      ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700${isOwn?';color:var(--y)':''}">${v.company}</span>`
+      : `<span class="priv-cell blur-on"><span class="priv-icon">🔒</span>${v.company}</span>`;
+
+    let destCell = '';
+    if(showData){
+      destCell = (!isAdmin && isTrain && !isOwn) 
+        ? `<span style="color:var(--txd);font-size:13px;font-family:'JetBrains Mono',monospace">Transito Ferroviario</span>` 
+        : `<span style="font-family:'JetBrains Mono',monospace;font-size:13px">${v.dest}</span>`;
+    } else {
+      destCell = `<span class="priv-cell blur-on"><span class="priv-icon">🔒</span>${v.dest}</span>`;
+    }
+
+    let cargoCell = showData 
+      ? (!isAdmin && isTrain && !isOwn ? `<span style="color:var(--txd);font-size:13px">—</span>` : `<span style="font-size:13px;color:${isOwn?'var(--txm)':'var(--txd)'}">${v.cargo}</span>`)
+      : `<span class="priv-cell blur-on"><span class="priv-icon">🔒</span>${v.cargo}</span>`;
+
+    let etaCell = showData 
+      ? (isOwn ? `<span class="eta-cell eta-nexus">${v.eta} (+${v.etaMins}m)</span>` : (!isAdmin && isTrain && !isOwn ? `<span class="eta-cell" style="color:var(--txd)">—</span>` : `<span class="eta-cell">${v.eta}</span>`))
+      : `<span class="eta-cell eta-hidden">00:00</span>`;
+
+    let speedCell = showData ? `<span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txd)">${v.speed}</span>` : `<span style="color:transparent;filter:blur(5px);user-select:none">00 km/h</span>`;
+
+    let privBadge = isOwn 
+      ? `<span class="pill pill-g">🔓 AUTORIZZATO</span>` 
+      : (isAdmin ? `<span class="pill" style="background:rgba(0,180,216,.1);color:var(--blu);border:1px solid rgba(0,180,216,.3)">📋 VISIBILE</span>` : `<span class="pill pill-r">🔒 OSCURATO</span>`);
+
+    rows += `<tr class="${rowClass}">
+      <td style="text-align:center; font-size:16px;">${typeIcon[v.type]||'🚛'}</td>
+      <td>${plateCell}</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;color:var(--txd)">${v.type}</span></td>
+      <td>${companyCell}</td>
+      <td>${destCell}</td>
+      <td>${cargoCell}</td>
+      <td>${etaCell}</td>
+      <td>${speedCell}</td>
+      <td>${statusMap[v.status]||''}</td>
+      <td>${privBadge}</td>
+    </tr>`;
+  });
+
+  if(tbody) tbody.innerHTML = rows;
+}
+
+function hashPlate(p){
+  let h=0;for(let c of p){h=((h<<5)-h)+c.charCodeAt(0);h|=0;}
+  return Math.abs(h).toString(16).padStart(8,'0').slice(0,8)+'...';
+}
+
+// ═══════════════════════════════════════════════════
+//  MAP MARKERS (REMOVED AS REQUESTED)
+// ═══════════════════════════════════════════════════
+function renderMapMarkers(){
+  const layer = document.getElementById('mkLayer');
+  if(layer) layer.innerHTML=''; // Mantiene il layer pulito senza visualizzare puntini
+}
+
+// ═══════════════════════════════════════════════════
+//  MAP ZONE CLICK
+// ═══════════════════════════════════════════════════
+document.querySelectorAll('.zone-g').forEach(g=>{
+  g.addEventListener('click',()=>{
+    const z = g.dataset.zone;
+    showZonePanel(z);
+    
+    document.querySelectorAll('.za,.zone-a').forEach(a=>a.style.filter='');
+    if(role === 'admin' || BRT_ZONES.includes(z)) {
+      g.querySelector('.za,.zone-a').style.filter='brightness(1.5)';
+    }
+  });
+});
+
+function showZonePanel(zone){
+  const bodyEl = document.getElementById('mspBody');
+  const subEl = document.getElementById('mspSub');
+  
+  if(!bodyEl) return;
+  subEl.textContent=`Zona: ${zone}`;
+
+  if(role === 'brt' && !BRT_ZONES.includes(zone)) {
+    bodyEl.innerHTML=`
+      <div style="text-align:center; padding:30px 10px;">
+        <div style="font-size:36px; margin-bottom:12px;">🔒</div>
+        <div style="color:var(--red); font-family:'Barlow Condensed', sans-serif; font-size:20px; font-weight:bold; letter-spacing:0.05em;">DATI OSCURATI</div>
+        <div style="font-size:14px; color:var(--txd); margin-top:12px; line-height:1.5;">
+          In modalità tenant (Privacy by Design), i dati di saturazione e i dettagli della concorrenza non sono accessibili.
+        </div>
+      </div>
+    `;
+    if(window.innerWidth <= 768) setTimeout(()=>openMobMapPanel(zone), 50);
+    return;
+  }
+
+  const d = ZONE_DATA[zone] || {tenants:['Nessun dato'], sat:0, satColor:'grn', rec:'Zona non assegnata'};
+  const c = SAT_COLORS[d.satColor]||'#888';
+  const circ = 2*Math.PI*30;
+  const off = circ-(d.sat/100)*circ;
+  
+  bodyEl.innerHTML=`
+    <div class="zring-wrap">
+      <svg width="76" height="76" viewBox="0 0 76 76"><circle cx="38" cy="38" r="30" fill="none" stroke="#333" stroke-width="8"/><circle cx="38" cy="38" r="30" fill="none" stroke="${c}" stroke-width="8" stroke-dasharray="${circ}" stroke-dashoffset="${off}" transform="rotate(-90 38 38)" stroke-linecap="round"/><text x="38" y="44" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;fill:${c}">${d.sat}%</text></svg>
+      <div><div class="zsat-pct" style="color:${c}">${d.sat}%</div><div class="zsat-lbl">Saturazione AI</div><div style="font-size:12px;color:var(--txd);margin-top:4px;font-family:'JetBrains Mono',monospace; font-weight:bold;">${d.sat>75?'🔴 ALTA':d.sat>50?'🟠 MEDIA':d.sat>25?'🟡 NORMALE':'🟢 LIBERA'}</div></div>
+    </div>
+    <div class="zbar"><div class="zbf" style="width:${d.sat}%;background:${c}"></div></div>
+    <div class="airec" style="margin-top:16px"><div class="airec-ttl">🤖 Raccomandazione AI</div><div>${d.rec}</div></div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);margin:16px 0 8px">AZIENDE OSPITATE (${d.tenants.length})</div>
+    ${d.tenants.map(t=>`<div class="tchip">${t}</div>`).join('')}
+  `;
+  
+  if(window.innerWidth <= 768) setTimeout(()=>openMobMapPanel(zone), 50);
+}
+
+// ═══════════════════════════════════════════════════
+//  MAP ZOOM / PAN
+// ═══════════════════════════════════════════════════
+function applyT(){
+  const t=`translate(${mapTx.x}px,${mapTx.y}px) scale(${mapScale})`;
+  document.getElementById('mapSvg').style.transform=t;
+}
+function zMap(f){mapScale=Math.min(3,Math.max(.5,mapScale*f));applyT();}
+function rMap(){mapScale=1;mapTx={x:0,y:0};applyT();}
+
+const mc2 = document.getElementById('mapCont');
+if(mc2) {
+  mc2.addEventListener('mousedown',e=>{isDrag=true;dragS={x:e.clientX-mapTx.x,y:e.clientY-mapTx.y};mc2.style.cursor='grabbing';});
+  window.addEventListener('mousemove',e=>{if(!isDrag)return;mapTx={x:e.clientX-dragS.x,y:e.clientY-dragS.y};applyT();});
+  window.addEventListener('mouseup',()=>{isDrag=false;mc2.style.cursor='';});
+  mc2.addEventListener('wheel',e=>{e.preventDefault();zMap(e.deltaY<0?1.1:.9);},{passive:false});
+  
+  let touchOrigin = null;
+  let mapDragging = false;
+  const DRAG_THRESHOLD = 8;
+  
+  mc2.addEventListener('touchstart', e=>{
+    if(e.touches.length === 1){
+      touchOrigin = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+      mapDragging = false;
+      dragS = {x: e.touches[0].clientX - mapTx.x, y: e.touches[0].clientY - mapTx.y};
+    }
+  }, {passive:true});
+  
+  mc2.addEventListener('touchmove', e=>{
+    if(e.touches.length === 1 && touchOrigin){
+      const dx = e.touches[0].clientX - touchOrigin.x;
+      const dy = e.touches[0].clientY - touchOrigin.y;
+      if(!mapDragging && Math.hypot(dx,dy) > DRAG_THRESHOLD){
+        mapDragging = true;
+      }
+      if(mapDragging){
+        mapTx = {x: e.touches[0].clientX - dragS.x, y: e.touches[0].clientY - dragS.y};
+        applyT();
+      }
+    }
+    if(e.touches.length === 2 && lastDist > 0){
+      const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      zMap(dist / lastDist);
+      lastDist = dist;
+    }
+  }, {passive:true});
+  
+  mc2.addEventListener('touchend', ()=>{ touchOrigin = null; mapDragging = false; });
+  let lastDist = 0;
+  mc2.addEventListener('touchstart', e=>{
+    if(e.touches.length === 2){
+      lastDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    }
+  }, {passive:true});
+  mc2.addEventListener('touchend', ()=>{lastDist = 0;});
+}
+
+// ═══════════════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════════════
+const hrs=[];
+for(let h=6;h<=22;h++){hrs.push(`${h}:00`);if(h<22)hrs.push(`${h}:30`);}
+const actual=[12,15,20,25,28,32,38,42,45,50,52,48,55,58,62,65,70,75,85,92,88,80,72,65,58,50,42,38,32,28,22,18,14];
+const forecast=[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,90,85,75,68,60,52,44,40,34,30,24,20,15];
+const threshold=new Array(hrs.length).fill(80);
+
+const cOpts={
+  responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'#222',borderColor:'#444',borderWidth:1,titleColor:'#FFCC00',bodyColor:'#E8E8E8',titleFont:{family:'JetBrains Mono',size:12},bodyFont:{family:'JetBrains Mono',size:12}}},
+  scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#aaa',font:{family:'JetBrains Mono',size:10},maxTicksLimit:8}},y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#aaa',font:{family:'JetBrains Mono',size:10}}}}
+};
+
+function initChart(id){
+  if(chartInstances[id])return;
+  const el=document.getElementById(id);
+  if(!el)return;
+  const ctx=el.getContext('2d');
+  
+  if(id==='chart1'){
+    chartInstances[id]=new Chart(ctx,{type:'line',data:{labels:hrs,datasets:[
+      {label:'Attuale',data:actual,borderColor:'#FFCC00',backgroundColor:'rgba(255,204,0,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true},
+      {label:'Forecast',data:forecast,borderColor:'#00B4D8',borderDash:[7,4],borderWidth:2,pointRadius:0,tension:.4},
+      {label:'Soglia Critica',data:threshold,borderColor:'#FF4444',borderDash:[5,5],borderWidth:2,pointRadius:0}
+    ]},options:{...cOpts,animation:{duration:800}}});
+  }
+  else if(id==='chart2'){
+    chartInstances[id]=new Chart(ctx,{type:'bar',data:{
+      labels:['Varco Nord', 'Varco Sud', 'CD1', 'CD2'],
+      datasets:[
+        {label:'Baseline Storica', data:[30, 26, 35, 29], backgroundColor:'#555555', borderRadius:4},
+        {label:'Target AI', data:[22.5, 19.5, 26.2, 21.7], backgroundColor:'#00E676', borderRadius:4}
+      ]
+    },options:{...cOpts, plugins:{...cOpts.plugins, legend:{display:true, labels:{color:'#ddd', font:{family:'JetBrains Mono',size:12}}}}}});
+  }
+  else if(id==='chart3'){
+    const months=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    chartInstances[id]=new Chart(ctx,{type:'line',data:{labels:months,datasets:[
+      {label:'2024 (Baseline)',data:[42,38,45,40,43,38,35,32,36,34,30,28],borderColor:'#666',backgroundColor:'transparent',borderWidth:2,pointRadius:3,tension:.3},
+      {label:'2025 (AI Routing)',data:[35,32,38,34,37,32,29,27,30,28,25,22],borderColor:'#00B4D8',backgroundColor:'rgba(0,180,216,.08)',borderWidth:3,pointRadius:4,tension:.3,fill:true}
+    ]},options:{...cOpts,plugins:{...cOpts.plugins,legend:{display:true,labels:{color:'#ddd',font:{family:'JetBrains Mono',size:12}}}}}});
+  }
+  else if(id==='chart4'){
+    chartInstances[id]=new Chart(ctx,{type:'doughnut',data:{
+      labels:['Standard / Dry', 'Temp-Controlled', 'Perishable', 'Hazardous (ADR)'],
+      datasets:[{
+        data:[45, 25, 20, 10],
+        backgroundColor:['#00B4D8', '#9B59B6', '#00E676', '#FF4444'],
+        borderWidth:0,
+        hoverOffset: 4
+      }]
+    },options:{
+      responsive:true, maintainAspectRatio:false, cutout:'70%',
+      plugins:{legend:{position:'right', labels:{color:'#ddd',font:{family:'JetBrains Mono',size:11}}}}
+    }});
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  MOBILE MAP PANEL FUNCTIONS
+// ═══════════════════════════════════════════════════
+function openMobMapPanel(zone) {
+  const body = document.getElementById('mspBody').innerHTML;
+  document.getElementById('mspMobTitle').textContent = 'Zona: ' + zone;
+  document.getElementById('mspMobBody').innerHTML = body;
+  document.getElementById('mspMobOverlay').classList.add('show');
+  document.getElementById('mspMob').classList.add('show');
+}
+
+function closeMobMapPanel() {
+  document.getElementById('mspMobOverlay').classList.remove('show');
+  document.getElementById('mspMob').classList.remove('show');
+}
+
+let touchStartY = 0;
+const mobPanel = document.getElementById('mspMob');
+if(mobPanel){
+  mobPanel.addEventListener('touchstart', e=>{ touchStartY = e.touches[0].clientY; }, {passive:true});
+  mobPanel.addEventListener('touchmove', e=>{ if(e.touches[0].clientY - touchStartY > 60) closeMobMapPanel(); }, {passive:true});
+}
+
+window.addEventListener('load',()=>{
+  setTimeout(()=> { initChart('chart1'); initChart('chart2'); initChart('chart3'); initChart('chart4'); }, 150);
+});
+</script>
+</body>
+</html>
